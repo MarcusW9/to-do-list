@@ -24,3 +24,9 @@ export function assignToDo(todo, project) {
         console.log("Please rename")
     }
 }
+
+// export function assignToDo(todo, project) {
+//     for (let key of project.content) {
+//         if (!project.content)
+//     }
+// }

@@ -1,8 +1,53 @@
+:root {
+    --background-color: white;
+    --brand-color: #A0C4E2;
+    --project-color: #FFE74C;
+}
+
 body {
-    background-color: red;
+    background-color: var(--backkground-color)
 }
 
 button {
-    background-color: beige;
-    
+    max-height: 40px;
+    border-radius: 10px;
+    background-color: var(--brand-color);
 }
+
+.project-card {
+    margin: 20px;
+    padding: 10px 20px;
+    display: grid;
+    grid-template-rows: 1fr 3fr;
+    box-shadow: 4px 4px 4px lightgray;
+    border: 0.5px solid black;
+    border-radius: 10px;
+}
+
+.project-card-content {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(200px, 1fr))
+}
+
+.todo-card {
+    margin: 10px;
+    padding: 10px;
+    min-height: 200px;
+    border: 1px solid var(--brand-color);
+    border-radius: 10px;
+}
+
+#add-todo-dialog-inside {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+#add-todo-dialog-content {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    background-color: white;
+    width: 90%;
+}
+
