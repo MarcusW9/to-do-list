@@ -8,6 +8,26 @@ export class ToDo {
         this.priority = priority
         this.notes = notes
     }
+
+    editTitle(newTitle) {
+        this.title = newTitle
+    }
+
+    editDescription(newDescription) {
+        this.description = newDescription;
+    }
+
+    editDueDate(newDueDate) {
+        this.dueDate = newDueDate;
+    }
+
+    editPriority(newPriority) {
+        this.priority = newPriority;
+    }
+
+    editNotes(newNotes) {
+        this.notes = newNotes;
+    }
 }
 
 // A factory function to create a todo object using the class 
@@ -21,12 +41,10 @@ export function assignToDo(todo, project) {
     if (!project[todo.title]) {
         project[todo.title] = todo
     } else {
-        console.log("Please rename")
+        alert("This name is already taken")
     }
 }
 
-// export function assignToDo(todo, project) {
-//     for (let key of project.content) {
-//         if (!project.content)
-//     }
-// }
+export function removeToDo() {
+    delete project.content[toDoName];
+};

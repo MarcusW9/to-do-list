@@ -3,8 +3,12 @@ export const projects = (function allProjects() {
     const all = {}
 
     function createProject(name) {
+        if (!this.all[name]) {
         const newProject = new Project(name)
         return newProject
+        } else {
+            alert ("This name is already Taken")
+        }
     }
 
     function groupProject(project) {
@@ -21,5 +25,3 @@ export class Project {
         this.name = name;
     }
 }
-
-// DOM
