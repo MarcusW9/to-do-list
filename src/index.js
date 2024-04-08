@@ -11,8 +11,11 @@ import './styles.css';
 import { compareAsc, format } from "date-fns";
 import { projects, Project } from './projects.js';
 import { ToDo, factoryToDo, assignToDo, removeToDo} from './todo.js'
+import { toDoDialogComponent, refreshToDoDialog } from './tododialog.js';
 // const example = format(new Date(2014, 1, 11), "yyyy-MM-dd");
 // console.log(example)
+
+toDoDialogComponent()
 
 //create dummy project
 const testProject = new Project("Learning")
@@ -31,42 +34,62 @@ projects.groupProject(secondProject)
 /// Start handling frontEnd stuff
 const content = document.querySelector("#content")
 const addProjectBtn = document.querySelector("#add-project-btn")
-const toDoDialog = document.querySelector("#add-todo-dialog")
+let toDoDialog = document.querySelector("#add-todo-dialog")
 
 // Responsible for displaying all projects (existing already)
-const displayProjects = (projects) => { for (let key in projects) {
-   
-    const project = document.createElement("div")
-    console.log(projects[key].name)
-    project.id = `${projects[key].name.replace(/\s/g, "-")}`
-    project.classList.add("project-card") 
-    
-    const projectHeader = document.createElement("div")
-    projectHeader.classList.add("project-header")
-    project.appendChild(projectHeader)
+const displayProjects = (projects) => {
+    for (let key in projects) {
+        const project = document.createElement("div");
+        project.id = `${projects[key].name.replace(/\s/g, "-")}`;
+        project.classList.add("project-card");
 
-    const projectName = document.createElement("p")
-    projectName.classList.add("project-heading")
-    projectName.textContent = `${projects[key].name}`
-    projectHeader.appendChild(projectName)
+        const projectHeader = document.createElement("div");
+        projectHeader.classList.add("project-header");
+        project.appendChild(projectHeader);
 
-    const addToDoBtn = document.createElement("button")
-    addToDoBtn.classList.add("add-todo-btns")
-    addToDoBtn.textContent = "Add To-do"
-    addToDoBtn.addEventListener("click", () => {
-        toDoDialog.setAttribute("data-project", `${projects[key].name.replace(/\s/g, "-")}`)
-        toDoDialog.showModal()
-    })
-    projectHeader.appendChild(addToDoBtn)
+        const projectName = document.createElement("p");
+        projectName.classList.add("project-heading");
+        projectName.textContent = `${projects[key].name}`;
+        projectHeader.appendChild(projectName);
 
-    const projectCardContent = document.createElement("div")
-    projectCardContent.id = `${projects[key].name.replace(/\s/g, "-")}-content`
-    projectCardContent.classList.add("project-card-content")
-    project.appendChild(projectCardContent)
+        const addToDoBtn = document.createElement("button");
+        addToDoBtn.classList.add("add-todo-btns");
+        addToDoBtn.textContent = "Add To-do";
+        projectHeader.appendChild(addToDoBtn); // Append here, outside the event listener
 
-    content.appendChild(project)
-}
-}
+        // set the dialog to and buttons to create a new todo (as opposed to editting)
+        addToDoBtn.addEventListener("click", () => {
+            refreshToDoDialog()
+            let toDoDialog = document.querySelector("#add-todo-dialog");
+            toDoDialog.setAttribute("data-project", `${projects[key].name.replace(/\s/g, "-")}`);
+            toDoCancelButton(toDoDialog)
+            let confirmButton = document.getElementById("confirm-todo");
+            confirmButton.addEventListener("click", () => {
+                const { title, description, date, priority, notes } = toDoDialogValues();
+
+                if (!title || !description || !date || !priority || !notes) {
+                    alert("Please enter valid information");
+                } else {
+                    let todo = factoryToDo(title, description, date, priority, notes);
+                    let dataProject = toDoDialog.getAttribute("data-project");
+                    let projectName = dataProject.replace(/-/g, " ");
+                    assignToDo(todo, projects[projectName].content);
+                    displayToDos();
+                    toDoDialog.close();
+                }
+            });
+            toDoDialog.showModal();
+        });
+
+        const projectCardContent = document.createElement("div");
+        projectCardContent.id = `${projects[key].name.replace(/\s/g, "-")}-content`;
+        projectCardContent.classList.add("project-card-content");
+        project.appendChild(projectCardContent);
+
+        content.appendChild(project);
+    }
+};
+
   
 displayProjects(projects.all)
 
@@ -122,7 +145,7 @@ function componentAddProjectDialog() {
         dialog.close()
     })
     addProjectDialogBtns.appendChild(confirmButton)
-
+    
     const cancelButton = document.createElement("button")
     cancelButton.textContent = "Cancel" 
     cancelButton.addEventListener("click", function() {
@@ -142,7 +165,7 @@ const toDoDialogValues = () => {
     const toDoDialog = document.getElementById("add-todo-dialog");
     const titleInput = document.getElementById("add-todo-title");
     const descriptionInput = document.getElementById("add-todo-description");
-    const dateInput = document.getElementById("add-todo-date");
+    const dateInput = document.getElementById("add-todo-due-date");
     const priorityInput = document.getElementById("add-todo-priority");
     const notesInput = document.getElementById("add-todo-notes");
 
@@ -157,26 +180,16 @@ const toDoDialogValues = () => {
 
 
 // Grab the buttons for the ToDo dialog so I can confirm or close
-const confirmButton = document.getElementById("confirm-todo");
-const cancelButton = document.getElementById("cancel-todo");
+let confirmButton = document.getElementById("confirm-todo");
+const toDoCancelButton = (toDoDialog) => {
+    let cancelButton = document.getElementById("cancel-todo");
+    cancelButton.addEventListener("click", () => {toDoDialog.close()})
+}
+// confirm button can either confirm a new todo or be used for editting the existing todo
 
 // Create a new todo with the information gathered from the dialog
-cancelButton.addEventListener("click", () => {toDoDialog.close()})
 confirmButton.addEventListener("click", () => {
-
-    const { title, description, date, priority, notes } = toDoDialogValues()
-
-    if (!title || !description || !date || !priority || !notes) {
-        alert("Please enter valid information")
-    } else {
-        let todo = factoryToDo(title, description, date, priority, notes) 
-        let dataProject = toDoDialog.getAttribute("data-project")
-        let projectName = dataProject.replace(/-/g, " ")
-        assignToDo(todo, projects.all[projectName].content)
-        displayToDos()
-        toDoDialog.close()
-    }
-    // console.log(projects.all[`${toDoDialog.getAttribute("data-project")}`].content)
+    confirmButtonCreate()
 })
 
     const displayToDos = () => {
@@ -219,15 +232,32 @@ confirmButton.addEventListener("click", () => {
                 const viewIcon = document.createElement("div")
                 viewIcon.classList.add("todo-btn-icons")
                 viewIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>magnify-expand</title><path d="M18 16H17.42L16.61 15.19C17.5 14 18 12.5 18 11C18 7.13 14.87 4 11 4C9.5 4 8 4.5 6.79 5.4C3.7 7.72 3.07 12.11 5.39 15.2C7.71 18.29 12.1 18.92 15.19 16.6L16 17.41V18L21 23L23 21L18 16M11 16C8.24 16 6 13.76 6 11S8.24 6 11 6 16 8.24 16 11 13.76 16 11 16M3 6L1 8V1H8L6 3H3V6M21 1V8L19 6V3H16L14 1H21M6 19L8 21H1V14L3 16V19H6Z" /></svg>`
-                // viewBtn.addEventListener("click", edit)
                 viewBtn.appendChild(viewIcon)
                 
-
+                // set the dialog to and buttons to edit a new todo (as opposed to creating a new)
                 const editBtn = document.createElement("button");
                 editBtn.classList.add("edit-todo-btn")
                 const editIcon = document.createElement("div")
                 editIcon.classList.add("todo-btn-icons")
                 editIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil-outline</title><path d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" /></svg>`
+                editBtn.addEventListener("click", () => {
+                    refreshToDoDialog()
+                    let toDoDialog = document.querySelector("#add-todo-dialog")
+                    toDoCancelButton(toDoDialog)
+                    
+                    let confirmButton = document.getElementById("confirm-todo");
+                    confirmButton.addEventListener("click", function confirmButtonEdit() {
+                        const { title, description, date, priority, notes } = toDoDialogValues()
+                        if (!title || !description || !date || !priority || !notes) {
+                            alert("Please enter valid information")
+                        } else {
+                            toDo.editToDo( title, description, date, priority, notes )
+                            displayToDos()
+                            toDoDialog.close()
+                        }
+                    })
+                    toDoDialog.showModal()
+                })
                 editBtn.appendChild(editIcon)
                 
                 const deleteBtn = document.createElement("button");

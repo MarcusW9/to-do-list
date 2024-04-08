@@ -9,6 +9,14 @@ export class ToDo {
         this.notes = notes
     }
 
+    editToDo(newTitle, newDescription, newDueDate, newPriority, newNotes) {
+        this.title = newTitle
+        this.description = newDescription;
+        this.dueDate = newDueDate;
+        this.priority = newPriority;
+        this.notes = newNotes;
+    }
+
     editTitle(newTitle) {
         this.title = newTitle
     }
