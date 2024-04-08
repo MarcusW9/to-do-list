@@ -1,19 +1,15 @@
-//todos with title, description, dueDate and priority. 
-// You might also want to include notes or even a checklist
-
-// Your todo list should have projects or separate lists of todos.
-
-// Make a project 
-// Each project can have todos 
-// Project is an array of todos
-// each Todo is made of title, description, duedate, priority
 import './styles.css';
 import { compareAsc, format } from "date-fns";
 import { projects, Project } from './projects.js';
 import { ToDo, factoryToDo, assignToDo, removeToDo} from './todo.js'
 import { toDoDialogComponent, refreshToDoDialog } from './tododialog.js';
 // const example = format(new Date(2014, 1, 11), "yyyy-MM-dd");
-// console.log(example)
+
+
+let savedDataJSON = localStorage.getItem("savedData");
+if (savedDataJSON) {
+    projects.all = JSON.parse(savedDataJSON);
+}
 
 toDoDialogComponent()
 
@@ -290,6 +286,9 @@ confirmButton.addEventListener("click", () => {
                 projectCardContent.appendChild(toDoContainer)
             })
         })
+        const savedData = projects.all
+        savedDataJSON = JSON.stringify(savedData)
+        localStorage.setItem("savedData", savedDataJSON);
     }
 
 displayToDos()
